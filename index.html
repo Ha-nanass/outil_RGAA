@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-[#FFEAEB] text-[#38040E]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Audit RGAA 4.1.2 — Outil conforme RGAA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Librairie officielle html2pdf.js pour export PDF direct -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FFEAEB;
+      color: #38040E;
+    }
+
+    /* Prise en compte stricte de la visibilité du focus (RGAA 10.7) */
+    :focus-visible {
+      outline: 3px solid #A4133C !important;
+      outline-offset: 3px !important;
+    }
+
+    /* Lien d'évitement (RGAA 12.7) */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 1rem;
+      background: #38040E;
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.75rem;
+      border: 2px solid #FFA3A9;
+      z-index: 100;
+      font-weight: 700;
+      font-size: 0.875rem;
+      transition: top 0.2s ease-in-out;
+    }
+    .skip-link:focus {
+      top: 1rem;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #FFEAEB; }
+    ::-webkit-scrollbar-thumb { background: #A4133C; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #841028; }
+
+    @media print {
+      header, nav, aside, button, .skip-link, #pdfRenderArea {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      main {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col antialiased min-h-screen">
+
+  <!-- LIEN D'ÉVITEMENT PRINCIPAL (RGAA 12.7) -->
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+  <!-- TOPBAR FIXE (LANDMARK BANNER / HEADER) -->
+  <header role="banner" class="bg-[#38040E]/95 backdrop-blur-xl text-[#FFEAEB] sticky top-0 z-30 shadow-md border-b border-white/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo et Identité -->
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-[#A4133C] flex items-center justify-center font-black text-white text-xs shadow-md border border-white/30" aria-hidden="true">
+          RGAA
+        </div>
+        <div>
+          <h1 class="text-sm font-bold text-white leading-tight">Studio Audit RGAA</h1>
+          <p class="text-[11px] text-[#FFA3A9]">Référentiel 4.1.2</p>
+        </div>
+      </div>
+
+      <!-- Informations Projet et Barre de progression ARIA (RGAA 12.11) -->
+      <div class="hidden md:flex items-center space-x-6">
+        <div class="text-right">
+          <span class="text-[10px] text-[#FFA3A9] block uppercase tracking-wider font-semibold">Projet en cours</span>
+          <span class="text-xs font-bold text-white" id="headerProjectName">Portail des Services publics</span>
+        </div>
+        
+        <div class="w-48 space-y-1">
+          <div class="flex justify-between text-[11px] font-medium">
+            <span class="text-[#FFA3A9]">Avancement global</span>
+            <span id="headerProgressText" class="text-white font-bold">0%</span>
+          </div>
+          <div 
+            id="headerProgressContainer"
+            role="progressbar" 
+            aria-valuenow="0" 
+            aria-valuemin="0" 
+            aria-valuemax="100" 
+            aria-label="Avancement global de l'évaluation"
+            class="w-full bg-[#130400]/80 rounded-full h-2.5 overflow-hidden border border-white/20"
+          >
+            <div id="headerProgressBar" class="bg-[#FFA3A9] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export PDF -->
+      <div class="flex items-center space-x-2">
+        <button onclick="downloadFullAuditPDF()" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/30 backdrop-blur-md transition-all flex items-center space-x-2 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span class="hidden sm:inline">Télécharger PDF</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- NAVIGATION PRINCIPALE (LANDMARK NAVIGATION) -->
+  <nav aria-label="Navigation principale" class="bg-white/70 backdrop-blur-xl border-b border-white/80 sticky top-16 z-20 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2">
+      <div class="flex space-x-2 overflow-x-auto" id="navTabs" role="tablist">
+        <button onclick="switchView('dashboard')" id="nav-dashboard" role="tab" aria-selected="true" aria-controls="view-dashboard" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#A4133C] text-white transition-all flex items-center space-x-2 shadow-xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span>Tableau de bord</span>
+        </button>
+        <button onclick="switchView('cadrage')" id="nav-cadrage" role="tab" aria-selected="false" aria-controls="view-cadrage" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-[#52454B] hover:bg-white hover:text-[#38040E] transition-all flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <span>Périmètre</span>
+        </button>
+        <button onclick="switchView('audit')" id="nav-audit" role="tab" aria-selected="false" aria-controls="view-audit" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-[#52454B] hover:bg-white hover:text-[#38040E] transition-all flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span>Grille d'évaluation</span>
+        </button>
+        <button onclick="switchView('plan')" id="nav-plan" role="tab" aria-selected="false" aria-controls="view-plan" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-[#52454B] hover:bg-white hover:text-[#38040E] transition-all flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span>Guide & Plan pluriannuel</span>
+        </button>
+        <button onclick="switchView('report')" id="nav-report" role="tab" aria-selected="false" aria-controls="view-report" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-[#52454B] hover:bg-white hover:text-[#38040E] transition-all flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Rapport et export</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ESPACE DE TRAVAIL PRINCIPAL (LANDMARK MAIN) -->
+  <main id="main-content" role="main" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full outline-none">
+
+    <!-- VUE 1 : TABLEAU DE BORD D'ACCUEIL -->
+    <section id="view-dashboard" role="tabpanel" aria-labelledby="nav-dashboard" class="space-y-6">
+      <div class="bg-white/75 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-6">
+        <div class="border-b border-[#FFA3A9]/50 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 id="title-dashboard" tabindex="-1" class="text-base font-bold text-[#38040E] outline-none">Espace d'accueil</h2>
+            <p class="text-xs text-[#52454B] mt-0.5">Aperçu de l'avancement réel et accès direct aux modules de travail.</p>
+          </div>
+          <button onclick="startNewAudit()" class="px-4 py-2.5 bg-[#A4133C] hover:bg-[#841028] text-white text-xs font-semibold rounded-xl transition-all shadow-md flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Démarrer un nouvel audit</span>
+          </button>
+        </div>
+
+        <div class="bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white/90 shadow-sm space-y-5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#A4133C] bg-white px-3 py-1 rounded-full border border-[#A4133C]/40 shadow-2xs">Audit en cours</span>
+            <span class="text-xs font-medium text-[#52454B]" id="dashLastModified">Dernière mise à jour : aujourd'hui</span>
+          </div>
+
+          <div>
+            <h3 class="text-base font-bold text-[#38040E]" id="dashProjectName">Portail des Services publics</h3>
+            <p class="text-xs text-[#52454B] mt-0.5" id="dashAuditorName">Auditeur : Hana Boudaouine</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div class="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-white/90 shadow-2xs space-y-1">
+              <span class="text-[10px] text-[#52454B] font-semibold uppercase tracking-wider block">Tests effectués</span>
+              <span class="text-sm font-bold text-[#38040E]" id="dashProgressVal">0 / 18 tests</span>
+            </div>
+            <div class="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-white/90 shadow-2xs space-y-1">
+              <span class="text-[10px] text-[#52454B] font-semibold uppercase tracking-wider block">Conformité estimée</span>
+              <span class="text-sm font-bold text-[#A4133C]" id="dashScoreVal">Non évalué</span>
+            </div>
+            <div class="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-white/90 shadow-2xs space-y-1">
+              <span class="text-[10px] text-[#52454B] font-semibold uppercase tracking-wider block">Non-conformités</span>
+              <span class="text-sm font-bold text-[#841028]" id="dashNcVal">0 problème</span>
+            </div>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button onclick="switchView('audit')" class="px-5 py-2.5 bg-[#38040E] hover:bg-[#130400] text-white text-xs font-semibold rounded-xl transition-all shadow-md flex items-center space-x-2">
+              <span>Continuer l'évaluation</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE 2 : PÉRIMÈTRE ET ÉCHANTILLON -->
+    <section id="view-cadrage" role="tabpanel" aria-labelledby="nav-cadrage" class="hidden space-y-6">
+      <div class="bg-white/75 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-6 max-w-4xl mx-auto">
+        <div class="border-b border-[#FFA3A9]/50 pb-4">
+          <h2 id="title-cadrage" tabindex="-1" class="text-base font-bold text-[#38040E] outline-none">Périmètre et échantillon</h2>
+          <p class="text-xs text-[#52454B] mt-0.5">Informations générales et URLs de l'échantillon à vérifier.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="space-y-1.5">
+            <label for="projectName" class="block text-xs font-bold text-[#38040E]">Nom du service numérique</label>
+            <input type="text" id="projectName" value="Portail des Services publics" onchange="updateDashData()" class="w-full bg-white/80 border border-[#A4133C]/40 rounded-xl px-3.5 py-2 text-xs text-[#38040E] focus:bg-white focus:border-[#A4133C] outline-none transition-colors shadow-2xs font-medium">
+          </div>
+          <div class="space-y-1.5">
+            <label for="auditorName" class="block text-xs font-bold text-[#38040E]">Responsable de l'audit</label>
+            <input type="text" id="auditorName" value="Hana Boudaouine" onchange="updateDashData()" class="w-full bg-white/80 border border-[#A4133C]/40 rounded-xl px-3.5 py-2 text-xs text-[#38040E] focus:bg-white focus:border-[#A4133C] outline-none transition-colors shadow-2xs font-medium">
+          </div>
+          <div class="md:col-span-2 space-y-1.5">
+            <label for="samplePages" class="block text-xs font-bold text-[#38040E]">Liste des pages de l'échantillon (une par ligne)</label>
+            <textarea id="samplePages" rows="4" class="w-full bg-white/80 border border-[#A4133C]/40 rounded-xl p-3.5 text-xs font-mono text-[#38040E] focus:bg-white focus:border-[#A4133C] outline-none transition-colors leading-relaxed shadow-2xs">Page d'accueil (https://exemple.fr/)
+Page Contact (https://exemple.fr/contact)
+Mentions légales (https://exemple.fr/mentions-legales)</textarea>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-[#FFA3A9]/40 flex justify-end">
+          <button onclick="switchView('audit')" class="bg-[#A4133C] hover:bg-[#841028] text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md">
+            Accéder à la grille de contrôle &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE 3 : GRILLE D'ÉVALUATION & GUIDE DE CONTRÔLE RÉDUIT PAR DÉFAUT -->
+    <section id="view-audit" role="tabpanel" aria-labelledby="nav-audit" class="hidden">
+      <h2 id="title-audit" tabindex="-1" class="sr-only outline-none">Grille d'évaluation RGAA 4.1.2</h2>
+      <div class="flex flex-col lg:flex-row gap-6 items-start">
+        
+        <!-- Panneau de gauche : Grille des critères (70%) -->
+        <div id="criteriaContainer" class="w-full lg:w-8/12 space-y-6"></div>
+
+        <!-- Panneau de droite : Guide de contrôle repliable (RÉDUIT PAR DÉFAUT) -->
+        <aside aria-label="Guide de contrôle et méthode de vérification" class="w-full lg:w-4/12 sticky top-28 space-y-4">
+          <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/90 shadow-lg shadow-[#38040E]/5 overflow-hidden transition-all duration-300" id="helpSidePanel">
+            
+            <!-- EN-TÊTE REPLIABLE TOUJOURS VISIBLE -->
+            <button 
+              id="toggleHelpPanelBtn" 
+              onclick="toggleHelpPanel()" 
+              aria-expanded="false" 
+              aria-controls="helpPanelBodyContainer"
+              class="w-full p-4 flex items-center justify-between text-left bg-white/60 hover:bg-white/90 transition-colors border-b border-[#FFA3A9]/40 focus-visible:outline-none"
+              title="Cliquez pour réduire ou déployer le guide de contrôle"
+            >
+              <div class="flex items-center space-x-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-[#A4133C] bg-white px-2.5 py-0.5 rounded-full border border-[#A4133C]/40 shadow-2xs">Guide de contrôle</span>
+                <span id="helpTestId" class="text-xs font-mono font-bold text-[#841028]">Test 1.1.1</span>
+              </div>
+              <div class="flex items-center space-x-2 shrink-0">
+                <span id="helpPanelStateLabel" class="text-[11px] font-semibold text-[#52454B] hidden sm:inline">Déployer</span>
+                <svg id="helpPanelChevron" class="w-4 h-4 text-[#38040E] transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
+            </button>
+
+            <!-- CONTENU REPLIABLE (RÉDUIT PAR DÉFAUT) -->
+            <div id="helpPanelBodyContainer" class="grid transition-all duration-300 ease-in-out grid-rows-[0fr] opacity-0 pointer-events-none">
+              <div class="overflow-hidden p-5 pt-3 space-y-3">
+                <div>
+                  <h3 class="text-xs font-bold text-[#38040E] mb-1" id="helpTestTitle">Sélectionnez un test</h3>
+                  <p class="text-xs text-[#52454B] leading-relaxed" id="helpTestQuestion">Cliquez sur un test dans la grille pour afficher sa procédure de contrôle.</p>
+                </div>
+
+                <!-- Question d'auto-évaluation -->
+                <div class="bg-white/70 backdrop-blur-md p-3.5 rounded-xl border border-white/90 space-y-1 text-xs shadow-2xs">
+                  <span class="font-bold text-[#841028] block">Question d'auto-évaluation (Usage) :</span>
+                  <p class="text-[#38040E] leading-relaxed italic" id="helpUserQuestion">Sélectionnez un test dans la grille.</p>
+                </div>
+
+                <!-- Enjeu & Objectif -->
+                <div class="bg-[#FFEAEB]/60 backdrop-blur-md p-3.5 rounded-xl border border-white/80 space-y-1 text-xs">
+                  <span class="font-bold text-[#841028] block">Enjeu & Objectif d'accessibilité :</span>
+                  <p class="text-[#38040E] leading-relaxed" id="helpTestObservation">Sélectionnez un test dans la grille.</p>
+                </div>
+
+                <!-- Procédure d'audit pas à pas -->
+                <div class="bg-white/50 backdrop-blur-md p-3.5 rounded-xl border border-white/80 space-y-1 text-xs">
+                  <span class="font-bold text-[#841028] block">Procédure de contrôle pas à pas :</span>
+                  <div class="text-[#38040E] leading-relaxed" id="helpTestMethod">Sélectionnez un test dans la grille.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- VUE 4 : GUIDE ET PLAN PLURIANNUEL -->
+    <section id="view-plan" role="tabpanel" aria-labelledby="nav-plan" class="hidden space-y-6 max-w-5xl mx-auto">
+      
+      <!-- MODULE 1 : RAPPEL DES SOURCES JURIDIQUES ET LIMITES DE L'AUDIT -->
+      <div class="bg-white/75 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-4">
+        <div class="flex items-center justify-between border-b border-[#FFA3A9]/40 pb-4">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-[#A4133C] bg-white px-2.5 py-0.5 rounded-full border border-[#A4133C]/40 shadow-2xs">Cadre Réglementaire Officiel</span>
+            <h2 id="title-plan" tabindex="-1" class="text-base font-bold text-[#38040E] mt-1 outline-none">Guide d'élaboration du Schéma Pluriannuel & Plan d'Action</h2>
+          </div>
+          <span class="text-xs font-semibold text-[#52454B] bg-white/70 px-3 py-1 rounded-lg border border-white/90">Loi n° 2005-102 | Décret n° 2019-768</span>
+        </div>
+
+        <div class="bg-white/60 backdrop-blur-md border border-white/90 rounded-xl p-4 text-xs space-y-3 text-[#38040E]">
+          <div class="font-bold text-[#841028] flex items-center space-x-2">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <span>Portée juridique et limites de l'évaluation</span>
+          </div>
+          <p class="leading-relaxed">
+            L'article 47 de la loi n° 2005-102 du 11 février 2005 (modifiée) et son décret d'application n° 2019-768 du 24 juillet 2019 imposent aux organismes assujettis de publier un <strong>Schéma Pluriannuel d'Accessibilité (3 ans maximum)</strong>, décliné en <strong>Plans d'Action Annuels</strong>.
+          </p>
+          <div class="p-3 bg-[#FFEAEB] rounded-lg border border-[#A4133C]/30 text-[#841028] font-medium leading-relaxed">
+            <strong>Avertissement sur le périmètre :</strong> Les correctifs et axes de travail proposés ci-dessous sont issus des 18 tests évalués dans la grille. Ils ne constituent pas un plan d'action exhaustif sur l'ensemble des 106 critères du RGAA (Formulaires, ARIA, Structure HTML, etc.). L'absence de défaut sur ces 18 tests ne vaut pas conformité globale.
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULE 2 : GUIDE STRUCTURÉ EN 3 VOLETS RÉGLEMENTAIRES -->
+      <div class="bg-white/75 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-6">
+        <div class="border-b border-[#FFA3A9]/40 pb-3">
+          <h3 class="text-sm font-bold text-[#38040E]">Guide méthodique : composer son Schéma Pluriannuel</h3>
+          <p class="text-xs text-[#52454B] mt-0.5">Ce guide détaille les éléments à renseigner pour être en conformité avec les textes officiels.</p>
+        </div>
+
+        <!-- VOLET 1 : MENTIONS ET ÉLÉMENTS OBLIGATOIRES -->
+        <div class="space-y-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-[10px] font-bold bg-[#841028] text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">Volet 1</span>
+            <h4 class="text-xs font-bold text-[#38040E]">Mentions et éléments obligatoires (Décret n° 2019-768, Art. 2 & 3)</h4>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 text-xs">
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-2 shadow-2xs">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-[#38040E]">1. Durée et période de validité du schéma</span>
+                <span class="text-[10px] bg-[#FFEAEB] text-[#841028] font-bold px-2 py-0.5 rounded-full border border-[#A4133C]/30">Obligation Légale</span>
+              </div>
+              <p class="text-[#52454B]"><strong>Pourquoi c'est requis :</strong> L'article 2 du décret 2019-768 fixe une durée maximale de 3 ans pour la politique globale d'accessibilité.</p>
+              <div class="p-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg font-mono text-[11px] text-[#38040E]">
+                Exemple : « Schéma Pluriannuel d'Accessibilité Numérique — Période 2026-2028 »
+              </div>
+            </div>
+
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-2 shadow-2xs">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-[#38040E]">2. Organisation, gouvernance et référent accessibilité</span>
+                <span class="text-[10px] bg-[#FFEAEB] text-[#841028] font-bold px-2 py-0.5 rounded-full border border-[#A4133C]/30">Obligation Légale</span>
+              </div>
+              <p class="text-[#52454B]"><strong>Pourquoi c'est requis :</strong> L'organisme doit identifier formellement la chaîne de responsabilité et la personne chargée du suivi.</p>
+              <div class="p-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg font-mono text-[11px] text-[#38040E]">
+                Exemple : « Référente accessibilité : Hana Boudaouine (Pôle UX / DEDI). Organisation : Comité mensuel regroupant Direction Communication et Pôle Technique. »
+              </div>
+            </div>
+
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-2 shadow-2xs">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-[#38040E]">3. Ressources humaines et financières affectées</span>
+                <span class="text-[10px] bg-[#FFEAEB] text-[#841028] font-bold px-2 py-0.5 rounded-full border border-[#A4133C]/30">Obligation Légale</span>
+              </div>
+              <p class="text-[#52454B]"><strong>Pourquoi c'est requis :</strong> L'article 2 imposant des moyens concrets, il faut déclarer le budget et les temps/hommes dédiés.</p>
+              <div class="p-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg font-mono text-[11px] text-[#38040E]">
+                Exemple : « Budget annuel : 12 000 € (audits externes, formations) + 0,2 ETP affecté au pôle technique. »
+              </div>
+            </div>
+
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-2 shadow-2xs">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-[#38040E]">4. Plan de formation et de sensibilisation du personnel</span>
+                <span class="text-[10px] bg-[#FFEAEB] text-[#841028] font-bold px-2 py-0.5 rounded-full border border-[#A4133C]/30">Obligation Légale</span>
+              </div>
+              <p class="text-[#52454B]"><strong>Pourquoi c'est requis :</strong> Les agents/salariés concevant ou publiant du contenu doivent être formés au RGAA.</p>
+              <div class="p-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg font-mono text-[11px] text-[#38040E]">
+                Exemple : « Formation de 100% des intégrateurs web et contributeurs éditoriaux au RGAA 4.1 d'ici le T3 2026. »
+              </div>
+            </div>
+
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-2 shadow-2xs">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-[#38040E]">5. Prise en compte de l'accessibilité dans les marchés publics / achats</span>
+                <span class="text-[10px] bg-[#FFEAEB] text-[#841028] font-bold px-2 py-0.5 rounded-full border border-[#A4133C]/30">Obligation Légale</span>
+              </div>
+              <p class="text-[#52454B]"><strong>Pourquoi c'est requis :</strong> Les prestations externes acquises doivent impérativement respecter les règles du RGAA.</p>
+              <div class="p-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg font-mono text-[11px] text-[#38040E]">
+                Exemple : « Insertion d'une clause RGAA obligatoire dans 100% des CCTP de commande de logiciels et développement web. »
+              </div>
+            </div>
+
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-2 shadow-2xs">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-[#38040E]">6. Traitement des réclamations usagers et droit à la compensation</span>
+                <span class="text-[10px] bg-[#FFEAEB] text-[#841028] font-bold px-2 py-0.5 rounded-full border border-[#A4133C]/30">Obligation Légale</span>
+              </div>
+              <p class="text-[#52454B]"><strong>Pourquoi c'est requis :</strong> L'article 47 de la loi de 2005 impose de fournir un moyen de contact et un recours en cas de défaut d'accessibilité.</p>
+              <div class="p-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg font-mono text-[11px] text-[#38040E]">
+                Exemple : « Prise en charge des signalements sous 8 jours ouvrés via le formulaire en ligne, avec solution alternative humaine. »
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VOLET 2 : INFORMATIONS SELON SITUATION DE L'ORGANISME -->
+        <div class="space-y-4 pt-2 border-t border-[#FFA3A9]/40">
+          <div class="flex items-center space-x-2">
+            <span class="text-[10px] font-bold bg-[#A4133C] text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">Volet 2</span>
+            <h4 class="text-xs font-bold text-[#38040E]">Informations dépendant de la situation de l'organisme</h4>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-1.5 shadow-2xs">
+              <span class="font-bold text-[#38040E] block">Nature du statut juridique</span>
+              <p class="text-[#52454B]">Secteur public (Collectivité, État, Hôpital) ou entreprise privée au Chiffre d'Affaires &gt; 250 M€ en France.</p>
+            </div>
+            <div class="bg-white/90 p-4 rounded-xl border border-white/90 space-y-1.5 shadow-2xs">
+              <span class="font-bold text-[#38040E] block">Inventaire complet des services en ligne</span>
+              <p class="text-[#52454B]">Nombre exact de sites web, applications mobiles, intranets, extranets et mobiliers urbains numériques concernés.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- VOLET 3 : RECOMMANDATIONS MÉTHODOLOGIQUES (DINUM) -->
+        <div class="space-y-4 pt-2 border-t border-[#FFA3A9]/40">
+          <div class="flex items-center space-x-2">
+            <span class="text-[10px] font-bold bg-[#38040E] text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">Volet 3</span>
+            <h4 class="text-xs font-bold text-[#38040E]">Recommandations méthodologiques (Guide DINUM / DesignGouv)</h4>
+          </div>
+
+          <div class="bg-white/60 p-4 rounded-xl border border-white/90 text-xs space-y-2 text-[#38040E]">
+            <p><strong>Remarque :</strong> Ces éléments constituent des <em>bonnes pratiques managériales</em> recommandées par la DINUM :</p>
+            <ul class="list-disc list-inside space-y-1 text-[#52454B]">
+              <li>Réaliser une grille d'auto-évaluation du niveau de maturité interne (score de 1 à 5).</li>
+              <li>Instaurer un comité de pilotage d'accessibilité trimestriel.</li>
+              <li>Planifier des audits de contrôle intermédiaires entre la première année et le renouvellement à 3 ans.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MODULE 3 : MATRICE D'ACTION CORRECTIVE (RGAA 5.3 CONFORME) -->
+      <div class="bg-white/75 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#FFA3A9]/40 pb-4">
+          <div>
+            <h3 class="text-sm font-bold text-[#38040E]">Plan d'action annuel : corrections issues de cet audit</h3>
+            <p class="text-xs text-[#52454B] mt-0.5">Axes de travail générés uniquement à partir des non-conformités réellement constatées.</p>
+          </div>
+          <button onclick="renderPlanView()" class="px-3 py-1.5 bg-white hover:bg-white/90 text-[#841028] text-xs font-semibold rounded-xl border border-[#A4133C]/30 transition-all flex items-center space-x-1 shrink-0 shadow-2xs">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Actualiser les actions</span>
+          </button>
+        </div>
+
+        <div id="planAxesContainer" class="space-y-4">
+          <!-- Injecté dynamiquement -->
+        </div>
+
+        <div class="overflow-x-auto pt-2">
+          <table class="w-full text-left text-xs border-collapse">
+            <caption class="text-left font-bold text-xs text-[#38040E] mb-2">Matrice d'organisation des actions du plan d'action annuel</caption>
+            <thead>
+              <tr class="bg-white/90 text-[#38040E] font-bold border-b border-[#FFA3A9]/60">
+                <th scope="col" class="p-3 rounded-tl-xl">Réf. Test</th>
+                <th scope="col" class="p-3">Correctif préconisé (RGAA)</th>
+                <th scope="col" class="p-3 w-28">Priorité</th>
+                <th scope="col" class="p-3 w-32">Échéance</th>
+                <th scope="col" class="p-3 w-36">Responsable</th>
+                <th scope="col" class="p-3 rounded-tr-xl w-32">Statut</th>
+              </tr>
+            </thead>
+            <tbody id="planTableBody" class="divide-y divide-[#FFA3A9]/30">
+              <!-- Injecté dynamiquement avec aria-labels -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MODULE 4 : TRAME TEXTUELLE ÉDITABLE À COMPLÉTER -->
+      <div class="bg-white/75 backdrop-blur-xl p-6 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-4">
+        <label for="schemaTemplateText" class="text-sm font-bold text-[#38040E] block">Modèle de texte pour Schéma Pluriannuel (à copier)</label>
+        <p class="text-xs text-[#52454B]">Cette trame reprend l'ensemble des dispositions légales du Décret n° 2019-768.</p>
+
+        <textarea id="schemaTemplateText" rows="10" readonly class="w-full bg-white/90 border border-[#A4133C]/40 rounded-xl p-4 text-xs font-mono text-[#38040E] focus:outline-none leading-relaxed shadow-2xs">
+SCHÉMA PLURIANNUEL D'ACCESSIBILITÉ NUMÉRIQUE (2026 — 2028)
+[Nom de l'organisme / service]
+
+1. POLITIQUE ET ENGAGEMENT
+L'organisme [Nom de l'organisme] s'engage à rendre ses services numériques accessibles conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005.
+
+2. ORGANISATION ET RÉFÉRENT
+- Référent accessibilité désigné : [Nom, Prénom, Fonction]
+- Gouvernance : Un comité de suivi de l'accessibilité se réunit [Fréquence : ex. chaque trimestre].
+
+3. RESSOURCES HUMAINES ET FINANCIÈRES
+- Budget annuel alloué : [Montant en €]
+- Équipe interne mobilisée : [Nombre d'ETP]
+
+4. PLAN DE FORMATION ET SENSIBILISATION
+- Action 1 : Sensibilisation de l'équipe de direction.
+- Action 2 : Formation technique des développeurs et designers UX au RGAA 4.1.2.
+
+5. CLAUSES DANS LES MARCHÉS PUBLICS ET RECRUTEMENT
+- Intégration systématique des exigences d'accessibilité RGAA dans les cahiers des charges (CCTP).
+- Évaluation des connaissances RGAA lors des recrutements de profils digitaux.
+
+6. TRAITEMENT DES RÉCLAMATIONS ET COMPREHENSION
+- Moyen de contact accessible : [Adresse e-mail / Formulaire dédié]
+- Délai de réponse garanti : 8 jours ouvrés.
+        </textarea>
+      </div>
+
+    </section>
+
+    <!-- VUE 5 : RAPPORT ET EXPORT PDF COMPLET -->
+    <section id="view-report" role="tabpanel" aria-labelledby="nav-report" class="hidden space-y-6 max-w-4xl mx-auto">
+      
+      <div class="bg-white/75 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#FFA3A9]/40 pb-5">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-[#52454B]">Synthèse légale</span>
+            <div class="flex items-center space-x-3 mt-1">
+              <span id="reportScoreDisplay" class="text-3xl font-black text-[#38040E]">--</span>
+              <span id="reportStatusBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-white text-[#38040E] border border-[#A4133C]/40 shadow-2xs">En attente d'évaluation</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="downloadFullAuditPDF()" class="bg-[#A4133C] hover:bg-[#841028] text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Télécharger le rapport PDF</span>
+            </button>
+            <button onclick="window.print()" class="bg-white hover:bg-white/90 text-[#38040E] font-semibold text-xs px-3.5 py-2.5 rounded-xl border border-white/90 transition-all shadow-2xs flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <span class="hidden sm:inline">Imprimer</span>
+            </button>
+          </div>
+        </div>
+
+        <h2 id="title-report" tabindex="-1" class="text-base font-bold text-[#38040E] outline-none">Déclaration de conformité RGAA</h2>
+        <p id="reportLegalText" class="text-xs text-[#52454B] leading-relaxed"></p>
+
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-[#38040E]">Liste des non-conformités relevées</h3>
+          <div id="reportNcList" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- MODULE EXPORT PDF OFFICIEL -->
+      <div class="bg-white/75 backdrop-blur-xl p-6 md:p-8 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 space-y-5">
+        <div class="border-b border-[#FFA3A9]/40 pb-4">
+          <h3 class="text-sm font-bold text-[#38040E]">Générer le rapport d'audit complet en PDF</h3>
+          <p class="text-xs text-[#52454B] mt-0.5">Exporter un document d'audit officiel structuré reprenant l'intégralité du périmètre, le score, les constats, les guides réglementaires et la matrice pluriannuelle.</p>
+        </div>
+
+        <div class="bg-white/60 backdrop-blur-md p-4 rounded-xl border border-white/90 space-y-3 text-xs text-[#38040E]">
+          <span class="font-bold text-[#841028] block">Contenu inclus dans l'export PDF :</span>
+          <ul class="list-disc list-inside space-y-1 text-[#52454B]">
+            <li>Cartouche d'identification (Nom du projet, Responsable d'audit, Date)</li>
+            <li>Synthèse globale et Taux de conformité RGAA calculé</li>
+            <li>Liste complète des pages composant l'échantillon</li>
+            <li>Détail nominatif des non-conformités avec observations et pistes de correction</li>
+            <li>Synthèse du Guide pour le Schéma Pluriannuel conforme au Décret n° 2019-768</li>
+            <li>Matrice opérationnelle du Plan d'action annuel (priorités, phases, responsables, statuts)</li>
+            <li>Avertissement légal sur la portée et les limites du contrôle (18 tests)</li>
+          </ul>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button onclick="downloadFullAuditPDF()" class="flex-1 bg-[#A4133C] hover:bg-[#841028] text-white text-xs font-semibold px-5 py-3 rounded-xl transition-all shadow-md flex items-center justify-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Télécharger l'audit complet (PDF)</span>
+          </button>
+          <button onclick="window.print()" class="bg-white hover:bg-white/90 text-[#38040E] text-xs font-semibold px-5 py-3 rounded-xl border border-white/90 transition-all shadow-2xs flex items-center justify-center space-x-2 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <span>Imprimer / Sauvegarder via le navigateur</span>
+          </button>
+        </div>
+
+        <!-- ZONE DE NOTIFICATION ANNONCÉE VIA ARIA LIVE (RGAA 12.11) -->
+        <div id="pdfExportStatus" role="status" aria-live="polite" class="hidden p-3 rounded-xl border text-xs font-medium transition-all"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- CONTENEUR INVISIBLE POUR LE RENDU PDF PROPRE -->
+  <div id="pdfRenderArea" class="hidden" aria-hidden="true"></div>
+
+  <script>
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    const RGAA_DATA = [
+      {
+        id: "1.1",
+        theme: "Images",
+        badgeStyle: "bg-[#FFEAEB] text-[#841028] border-[#A4133C]/30",
+        title: "Chaque image porteuse d'information a-t-elle une alternative textuelle ?",
+        description: "Vérifie la présence d'une alternative textuelle pertinente sur l'ensemble des images informatives pour assurer leur restitution par les technologies d'assistance.",
+        subCriteria: [
+          { 
+            id: "1.1.1", 
+            title: "Images classiques (balise <img>)", 
+            question: "L'image d'information possède-t-elle un attribut alt pertinent ?", 
+            userQuestion: "Si la personne ne voit pas l'image, le texte d'alternative lui transmet-il exactement la même information ou la même fonction ?",
+            observation: "Permet aux lecteurs d'écran (NVDA, JAWS, VoiceOver) de vocaliser le contenu visuel. Une image informative doit posséder un alt non vide. Une image purement décorative doit posséder alt='' ou aria-hidden='true'.", 
+            method: "1. Ouvrir l'inspecteur DOM (F12) sur l'image.<br>2. Vérifier la présence de l'attribut alt.<br>3. Contrôler que la valeur est concise et équivalente à l'information visuelle.",
+            fixSuggestion: "Renseigner l'attribut alt avec la valeur textuelle exacte portée par l'image, ou insérer alt='' s'il s'agit d'une illustration purement graphique."
+          },
+          { 
+            id: "1.1.2", 
+            title: "Zones d'images réactives (<area>)", 
+            question: "Chaque zone cliquable a-t-elle un attribut alt explicite ?", 
+            userQuestion: "L'alternative indique-t-elle précisément où va mener ce clic sur la zone de l'image ?",
+            observation: "Chaque zone cliquable d'une carte image doit fournir sa destination ou son action sous forme de texte accessible.", 
+            method: "1. Localiser la balise <map> et ses éléments enfants <area>.<br>2. Vérifier que chaque zone cliquable munie d'un attribut href possède un alt rempli.",
+            fixSuggestion: "Ajouter un attribut alt explicite à chaque élément <area href='...'> pour désigner clairement sa cible."
+          },
+          { 
+            id: "1.1.3", 
+            title: "Boutons images (<input type='image'>)", 
+            question: "Le bouton image de formulaire a-t-il un alt explicite ?", 
+            userQuestion: "Le texte alternatif indique-t-il clairement l'action déclenchée par le bouton plutôt que de décrire le visuel ?",
+            observation: "L'alternative doit décrire la fonction (ex. « Rechercher » ou « Valider ») et non l'aspect graphique du bouton.", 
+            method: "1. Inspecter le composant <input type='image'>.<br>2. Vérifier que l'attribut alt indique l'action exacte transmise lors de la soumission.",
+            fixSuggestion: "Saisir dans l'attribut alt la fonction exécutée par le bouton (ex: alt='Valider le formulaire')."
+          },
+          { 
+            id: "1.1.4", 
+            title: "Images réactives côté serveur", 
+            question: "La carte réactive serveur est-elle doublée de liens textuels ?", 
+            userQuestion: "Existe-t-il des liens textuels accessibles sur la page permettant d'accéder aux mêmes destinations sans passer par l'image ?",
+            observation: "Les cartes réactives serveur basées sur des coordonnées x/y ne sont pas navigables au clavier et nécessitent une alternative sous forme de liens texte.", 
+            method: "1. Rechercher la présence de l'attribut ismap sur la balise <img>.<br>2. Vérifier qu'un bloc de liens texte équivalents est disponible à proximité immédiate.",
+            fixSuggestion: "Fournir une liste de liens texte standard sous ou à proximité immédiate de l'image réactive serveur."
+          },
+          { 
+            id: "1.1.5", 
+            title: "Images vectorielles (<svg>)", 
+            question: "Le SVG d'information porte-t-il role='img' et une alternative ?", 
+            userQuestion: "Le code du SVG contient-il un titre explicite et un rôle d'image permettant au lecteur d'écran de l'annoncer correctement ?",
+            observation: "Les balises SVG inline ne sont pas reconnues uniformément comme des images sans l'attribut role='img'.", 
+            method: "1. Inspecter l'élément <svg>.<br>2. Confirmer la présence de role='img'.<br>3. Vérifier la présence d'une balise <title> interne ou d'un attribut aria-label / aria-labelledby.",
+            fixSuggestion: "Ajouter role='img' sur la balise <svg> et y adjoindre un élément <title> ou un attribut aria-label descriptif."
+          },
+          { 
+            id: "1.1.6", 
+            title: "Images objets (<object>)", 
+            question: "L'élément <object> image contient-il une alternative textuelle ?", 
+            userQuestion: "Un texte alternatif équivalent est-il présent à l'intérieur de la balise pour prendre le relais si l'objet ne s'affiche pas ?",
+            observation: "Les éléments <object> affichant des contenus graphiques doivent proposer un contenu alternatif placé entre <object> et </object>.", 
+            method: "1. Inspecter le code source du composant <object type='image/...'>.<br>2. Vérifier la présence d'un paragraphe ou texte descriptif interne.",
+            fixSuggestion: "Insérer un paragraphe de remplacement explicite entre <object> et </object>."
+          },
+          { 
+            id: "1.1.7", 
+            title: "Images embarquées (<embed>)", 
+            question: "L'image <embed> a-t-elle un équivalent textuel ?", 
+            userQuestion: "Une alternative textuelle ou un libellé accessible permet-il de comprendre le contenu de cette image intégrée ?",
+            observation: "L'élément <embed> requiert un libellé accessible explicite pour être interprété par la synthèse vocale.", 
+            method: "1. Inspecter l'élément <embed>.<br>2. Vérifier la présence d'un attribut aria-label ou la disponibilité immédiate d'un texte explicatif adjacent.",
+            fixSuggestion: "Associer un attribut aria-label sur le <embed> ou placer un texte descriptif directement lié."
+          },
+          { 
+            id: "1.1.8", 
+            title: "Images bitmap (<canvas>)", 
+            question: "Le composant <canvas> d'information inclut-il une alternative ?", 
+            userQuestion: "Les données affichées dans le canevas sont-elles également présentées sous forme de texte brut ou de tableau dans le DOM ?",
+            observation: "Le contenu généré dynamiquement dans un <canvas> est invisible pour les aides techniques s'il n'est pas doublé dans le DOM réducteur.", 
+            method: "1. Inspecter le contenu interne de la balise <canvas>.<br>2. S'assurer qu'une alternative textuelle ou un tableau de données récapitulatif est inséré à l'intérieur.",
+            fixSuggestion: "Fournir un tableau HTML de données ou un texte récapitulatif accessible à l'intérieur de l'élément <canvas>."
+          }
+        ]
+      },
+      {
+        id: "3.2",
+        theme: "Couleurs",
+        badgeStyle: "bg-[#FFEAEB] text-[#841028] border-[#A4133C]/30",
+        title: "Le contraste entre la couleur du texte et son arrière-plan est-il suffisant ?",
+        description: "Garantit la lisibilité des contenus textuels pour les utilisateurs malvoyants ou évoluant dans un environnement très éclairé.",
+        subCriteria: [
+          { 
+            id: "3.2.1", 
+            title: "Texte normal (< 24px) — Ratio 4.5:1 minimum", 
+            question: "Le texte normal présente-t-il un ratio de contraste d'au moins 4.5:1 ?", 
+            userQuestion: "Le contraste entre la couleur du texte et la couleur du fond atteint-il au moins 4.5 pour 1 ?",
+            observation: "Standard WCAG AA / RGAA. S'applique à tous les textes standards de taille inférieure à 24px (ou 18.5px si non gras).", 
+            method: "1. Prélever la couleur de premier plan (color) et d'arrière-plan (background-color).<br>2. Utiliser l'outil Colour Contrast Analyser (CCA).<br>3. Vérifier que le ratio calculé est supérieur ou égal à 4.5:1.",
+            fixSuggestion: "Ajuster la teinte du texte ou du fond en CSS pour atteindre un ratio minimal de 4.5:1."
+          },
+          { 
+            id: "3.2.2", 
+            title: "Texte gras (< 18.5px) — Ratio 4.5:1 minimum", 
+            question: "Le texte gras de petite taille atteint-il le ratio de 4.5:1 ?", 
+            userQuestion: "Pour ce texte gras de petite taille, le contraste reste-t-il égal ou supérieur à 4.5 pour 1 ?",
+            observation: "Le texte en gras dont la taille est strictement inférieure à 18.5px exige un ratio de 4.5:1.", 
+            method: "1. Inspecter la propriété font-weight (≥ 700 ou bold) et la taille de police font-size.<br>2. Mesurer le ratio avec CCA et valider le seuil de 4.5:1.",
+            fixSuggestion: "Foncer la couleur du texte ou éclaircir l'arrière-plan pour obtenir au moins 4.5:1."
+          },
+          { 
+            id: "3.2.3", 
+            title: "Grand texte (≥ 24px) — Ratio 3:1 minimum", 
+            question: "Les grands titres (≥ 24px) ont-ils un ratio d'au moins 3:1 ?", 
+            userQuestion: "Ce grand titre présente-t-il un niveau de contraste d'au moins 3 pour 1 avec son arrière-plan ?",
+            observation: "Les textes de grande taille sont plus faciles à lire, le seuil toléré est réduit à 3:1.", 
+            method: "1. Vérifier que la taille restituée est au moins égale à 24px.<br>2. Mesurer le ratio de contraste et s'assurer qu'il atteint au moins 3:1.",
+            fixSuggestion: "Modifier la feuille de style pour garantir un ratio supérieur ou égal à 3:1 sur les grands titres."
+          },
+          { 
+            id: "3.2.4", 
+            title: "Grand texte en gras (≥ 18.5px) — Ratio 3:1 minimum", 
+            question: "Les grands titres en gras (≥ 18.5px) respectent-ils le ratio de 3:1 ?", 
+            userQuestion: "Ce grand titre en gras garantit-il un ratio de contraste d'au moins 3 pour 1 ?",
+            observation: "Les titres en gras de taille supérieure ou égale à 18.5px nécessitent un ratio minimal de 3:1.", 
+            method: "1. Confirmer la combinaison font-size ≥ 18.5px et font-weight bold.<br>2. Valider un ratio de 3:1 ou plus via l'inspecteur CSS.",
+            fixSuggestion: "Rehausser le contraste de la police ou du fond pour franchir la barre des 3:1."
+          },
+          { 
+            id: "3.2.5", 
+            title: "Mécanisme de contraste renforcé", 
+            question: "Un commutateur de contraste permet-il de corriger un fond insuffisant ?", 
+            userQuestion: "Si le contraste initial est insuffisant, l'utilisateur dispose-t-il d'un bouton lui permettant d'activer un affichage conforme ?",
+            observation: "Si les couleurs de la charte ne sont pas conformes par défaut, un bouton de contraste renforcé doit être présent.", 
+            method: "1. Activer le commutateur de mode sombre ou contraste élevé.<br>2. Mesurer à nouveau les textes révisés pour valider les ratios 4.5:1 ou 3:1.",
+            fixSuggestion: "Implémenter une feuille de style à contraste renforcé activable via un bouton accessible."
+          }
+        ]
+      },
+      {
+        id: "6.1",
+        theme: "Liens",
+        badgeStyle: "bg-[#FFEAEB] text-[#841028] border-[#A4133C]/30",
+        title: "Chaque lien est-il explicite ?",
+        description: "S'assure que la fonction et la destination de chaque hyperlien sont parfaitement compréhensibles sans ambiguïté.",
+        subCriteria: [
+          { 
+            id: "6.1.1", 
+            title: "Liens texte explicitement formulés", 
+            question: "L'intitulé du lien permet-il de comprendre sa destination ?", 
+            userQuestion: "En lisant l'intitulé du lien hors de son contexte, est-ce que je comprends exactement vers quelle page ou action il me dirige ?",
+            observation: "Évite que les utilisateurs de lecteurs d'écran écoutant la liste des liens ne soient confrontés à des 'Cliquez ici' isolés.", 
+            method: "1. Extraire la liste des liens de la page.<br>2. Vérifier que chaque texte de lien (ou son aria-label) décrit clairement sa fonction ou sa destination.",
+            fixSuggestion: "Reformuler l'intitulé visible ou ajouter un attribut aria-label pour préciser le contexte (ex. 'En savoir plus sur nos offres')."
+          },
+          { 
+            id: "6.1.2", 
+            title: "Liens image isolés", 
+            question: "Pour un lien contenant uniquement une image, l'alt décrit-il l'action ?", 
+            userQuestion: "L'alternative de l'image exprime-t-elle la destination du lien plutôt que de décrire simplement le visuel ?",
+            observation: "Lorsqu'un lien entoure uniquement une balise <img>, l'attribut alt de l'image constitue le nom accessible du lien.", 
+            method: "1. Inspecter la balise <a><img ... /></a>.<br>2. Vérifier que le alt de l'image indique la destination (ex. 'Retour à l'accueil').",
+            fixSuggestion: "Remplacer la description visuelle de l'image par l'action ou la destination exacte du lien dans l'attribut alt."
+          },
+          { 
+            id: "6.1.3", 
+            title: "Liens composites (texte + image)", 
+            question: "L'image du lien composite est-elle masquée (alt='') ?", 
+            userQuestion: "L'image présente à côté du texte est-elle masquée pour éviter qu'un lecteur d'écran ne répète deux fois la même information ?",
+            observation: "Si le texte du lien est déjà explicite, l'image adjacente est décorative et doit posséder alt=''.", 
+            method: "1. Inspecter la balise <a> contenant du texte et une image.<br>2. Confirmer que la balise <img> comporte un alt='' vide.",
+            fixSuggestion: "Passer l'attribut alt de l'image interne à alt='' ou ajouter aria-hidden='true'."
+          },
+          { 
+            id: "6.1.4", 
+            title: "Liens SVG", 
+            question: "Un lien sous forme d'icône SVG possède-t-il un nom accessible ?", 
+            userQuestion: "L'icône cliquable possède-t-elle un nom accessible explicite qui annonce son rôle au lecteur d'écran ?",
+            observation: "Un lien contenant uniquement un élément SVG doit posséder un nom accessible via aria-label sur le lien ou un <title> SVG.", 
+            method: "1. Inspecter le code <a href='...'><svg>...</svg></a>.<br>2. Vérifier le nom accessible restitué dans l'inspecteur d'accessibilité.",
+            fixSuggestion: "Ajouter un attribut aria-label sur l'élément <a> ou un élément <title> à l'intérieur du SVG."
+          },
+          { 
+            id: "6.1.5", 
+            title: "Conformité Label in Name", 
+            question: "L'aria-label du lien contient-il le texte visible au début ?", 
+            userQuestion: "Le nom vocal ou l'attribut accessible du lien commence-t-il bien par le même texte que celui qui est affiché à l'écran ?",
+            observation: "Exigence pour la commande vocale. Le texte visuel doit correspondre au début de l'intitulé vocal.", 
+            method: "1. Comparer le texte affiché sur le bouton/lien et la valeur de l'attribut aria-label.<br>2. S'assurer que le texte visible apparaît au tout début de l'aria-label.",
+            fixSuggestion: "Ajuster l'aria-label afin qu'il réutilise mot pour mot le texte visible en amont de tout texte complémentaire."
+          }
+        ]
+      }
+    ];
+
+    let auditState = {
+      subStatus: {},
+      comments: {},
+      planData: {},
+      selectedSubId: '1.1.1'
+    };
+
+    /* PANNEAU DU GUIDE DÉSACTIVÉ ET RÉDUIT PAR DÉFAUT */
+    let isHelpPanelOpen = false;
+
+    /* GESTION DU DÉPLIEMENT / REPLIEMENT DU GUIDE */
+    function toggleHelpPanel() {
+      isHelpPanelOpen = !isHelpPanelOpen;
+      updateHelpPanelUI();
+    }
+
+    function updateHelpPanelUI() {
+      const btn = document.getElementById('toggleHelpPanelBtn');
+      const body = document.getElementById('helpPanelBodyContainer');
+      const chevron = document.getElementById('helpPanelChevron');
+      const label = document.getElementById('helpPanelStateLabel');
+
+      if (!btn || !body) return;
+
+      if (isHelpPanelOpen) {
+        btn.setAttribute('aria-expanded', 'true');
+        body.className = "grid transition-all duration-300 ease-in-out grid-rows-[1fr] opacity-100";
+        if (chevron) chevron.classList.add('rotate-180');
+        if (label) label.innerText = "Réduire";
+      } else {
+        btn.setAttribute('aria-expanded', 'false');
+        body.className = "grid transition-all duration-300 ease-in-out grid-rows-[0fr] opacity-0 pointer-events-none";
+        if (chevron) chevron.classList.remove('rotate-180');
+        if (label) label.innerText = "Déployer";
+      }
+
+      updateGuideButtonsUI();
+    }
+
+    /* MISE À JOUR DE L'ÉTAT ACTIF DES BOUTONS GUIDE & PROCÉDURE */
+    function updateGuideButtonsUI() {
+      document.querySelectorAll('.sub-card').forEach(card => {
+        const cardSubId = card.getAttribute('data-sub-id');
+        const guideBtn = card.querySelector('.guide-btn');
+
+        if (cardSubId === auditState.selectedSubId) {
+          card.classList.add('ring-2', 'ring-[#A4133C]', 'bg-[#FFEAEB]/60');
+          card.setAttribute('aria-current', 'true');
+        } else {
+          card.classList.remove('ring-2', 'ring-[#A4133C]', 'bg-[#FFEAEB]/60');
+          card.removeAttribute('aria-current');
+        }
+
+        if (guideBtn) {
+          const isGuideActive = (cardSubId === auditState.selectedSubId && isHelpPanelOpen);
+          if (isGuideActive) {
+            guideBtn.className = "guide-btn px-2.5 py-1.5 rounded-full text-xs font-bold border-2 border-[#A4133C] bg-[#FFEAEB] text-[#841028] hover:bg-[#A4133C]/20 hover:border-[#841028] transition-all flex items-center space-x-1 shadow-2xs";
+            guideBtn.setAttribute('aria-expanded', 'true');
+          } else {
+            guideBtn.className = "guide-btn px-2.5 py-1.5 rounded-full text-xs font-semibold border border-[#A4133C]/40 bg-[#FFEAEB] text-[#A4133C] hover:bg-[#A4133C] hover:text-white transition-all flex items-center space-x-1";
+            guideBtn.setAttribute('aria-expanded', 'false');
+          }
+        }
+      });
+    }
+
+    /* DÉCLENCHEMENT EXCLUSIF VIA LE BOUTON « GUIDE & PROCÉDURE » */
+    function toggleGuideForSub(subId, event) {
+      if (event) event.stopPropagation();
+
+      /* Si le panneau est déjà ouvert sur le même test, un second clic le replie */
+      if (auditState.selectedSubId === subId && isHelpPanelOpen) {
+        toggleHelpPanel();
+      } else {
+        selectHelpTest(subId);
+        if (!isHelpPanelOpen) {
+          toggleHelpPanel();
+        } else {
+          updateGuideButtonsUI();
+        }
+      }
+    }
+
+    /* GESTION ACCESSIBLE DES TRANSITIONS DE VUES (RGAA 8.2 & 12.8) */
+    function switchView(viewId) {
+      ['dashboard', 'cadrage', 'audit', 'plan', 'report'].forEach(id => {
+        const viewEl = document.getElementById(`view-${id}`);
+        const navBtn = document.getElementById(`nav-${id}`);
+        viewEl.classList.add('hidden');
+        navBtn.setAttribute('aria-selected', 'false');
+        navBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-[#52454B] hover:bg-white hover:text-[#38040E] transition-all flex items-center space-x-2";
+      });
+
+      const activeView = document.getElementById(`view-${viewId}`);
+      const activeNav = document.getElementById(`nav-${viewId}`);
+      
+      activeView.classList.remove('hidden');
+      activeNav.setAttribute('aria-selected', 'true');
+      activeNav.className = "px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#A4133C] text-white transition-all flex items-center space-x-2 shadow-xs";
+
+      if (viewId === 'plan') renderPlanView();
+      if (viewId === 'report') renderReportView();
+
+      /* Déplacement du focus vers le titre H2 de la vue active pour la vocalisation */
+      const targetTitle = document.getElementById(`title-${viewId}`);
+      if (targetTitle) {
+        targetTitle.focus();
+      }
+    }
+
+    function startNewAudit() {
+      if (confirm("Voulez-vous réinitialiser l'audit en cours pour démarrer un nouveau projet ?")) {
+        auditState.subStatus = {};
+        auditState.comments = {};
+        auditState.planData = {};
+        RGAA_DATA.forEach(crit => {
+          crit.subCriteria.forEach(sub => {
+            auditState.subStatus[sub.id] = 'UNTESTED';
+          });
+        });
+        document.getElementById('projectName').value = "Nouveau Projet Web";
+        updateDashData();
+        renderAuditGrid();
+        switchView('cadrage');
+      }
+    }
+
+    function getParentStatus(critId) {
+      const crit = RGAA_DATA.find(c => c.id === critId);
+      if (!crit) return 'NA';
+
+      const statuses = crit.subCriteria.map(s => auditState.subStatus[s.id] || 'UNTESTED');
+
+      if (statuses.includes('NC')) return 'NC';
+      if (statuses.every(s => s === 'NA')) return 'NA';
+      if (statuses.every(s => s === 'C' || s === 'NA') && statuses.includes('C')) return 'C';
+      return 'À tester';
+    }
+
+    /* SÉLECTION D'UN TEST DANS LA GRILLE */
+    function selectHelpTest(subId) {
+      auditState.selectedSubId = subId;
+      updateGuideButtonsUI();
+
+      let foundSub = null;
+      RGAA_DATA.forEach(crit => {
+        const sub = crit.subCriteria.find(s => s.id === subId);
+        if (sub) foundSub = sub;
+      });
+
+      if (foundSub) {
+        document.getElementById('helpTestId').innerText = `Test ${foundSub.id}`;
+        document.getElementById('helpTestTitle').innerText = foundSub.title;
+        document.getElementById('helpTestQuestion').innerText = foundSub.question;
+        document.getElementById('helpUserQuestion').innerText = foundSub.userQuestion || "Posez-vous la question du respect du critère par l'utilisateur.";
+        document.getElementById('helpTestObservation').innerText = foundSub.observation;
+        document.getElementById('helpTestMethod').innerHTML = foundSub.method;
+      }
+    }
+
+    function handleCardKeyDown(event, subId) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectHelpTest(subId);
+      }
+    }
+
+    function renderAuditGrid() {
+      const container = document.getElementById('criteriaContainer');
+      container.innerHTML = '';
+
+      RGAA_DATA.forEach(crit => {
+        const parentStatus = getParentStatus(crit.id);
+        const card = document.createElement('div');
+        card.className = "bg-white/75 backdrop-blur-xl rounded-2xl border border-white/80 overflow-hidden shadow-lg shadow-[#38040E]/5 space-y-4 p-5 md:p-6";
+
+        card.innerHTML = `
+          <div class="bg-white/60 backdrop-blur-md p-4 rounded-xl border border-white/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div class="space-y-1 w-full">
+              <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${crit.badgeStyle}">Thème : ${escapeHtml(crit.theme)}</span>
+                <span id="badge-parent-${crit.id}" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${getParentBadgeStyle(parentStatus)}">
+                  Critère RGAA ${crit.id} : ${parentStatus}
+                </span>
+              </div>
+              <h3 class="text-sm font-bold text-[#38040E] mt-1.5 leading-snug">Critère ${crit.id} — ${escapeHtml(crit.title)}</h3>
+              <p class="text-xs text-[#52454B] leading-relaxed">${escapeHtml(crit.description)}</p>
+            </div>
+          </div>
+
+          <div class="space-y-3.5" role="list">
+            ${crit.subCriteria.map(sub => renderSubRow(crit.id, sub)).join('')}
+          </div>
+
+          <div class="pt-3 border-t border-[#FFA3A9]/40">
+            <label for="comment-${crit.id}" class="block text-xs font-bold text-[#38040E] mb-1.5">
+              Observations pour le critère RGAA ${crit.id} :
+            </label>
+            <textarea id="comment-${crit.id}" onchange="saveComment('${crit.id}', this.value)" rows="2" class="w-full bg-white/80 border border-[#A4133C]/40 rounded-xl p-3 text-xs text-[#38040E] focus:bg-white focus:border-[#A4133C] outline-none transition-colors shadow-2xs font-medium" placeholder="Préciser la localisation des défauts sur l'échantillon...">${escapeHtml(auditState.comments[crit.id] || '')}</textarea>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      /* Navigation de bas de grille */
+      const footerNavCard = document.createElement('div');
+      footerNavCard.className = "bg-white/75 backdrop-blur-xl p-5 md:p-6 rounded-2xl border border-white/80 shadow-lg shadow-[#38040E]/5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6";
+      footerNavCard.innerHTML = `
+        <div class="space-y-0.5 text-center sm:text-left">
+          <h4 class="text-xs font-bold text-[#38040E]">Fin de la grille d'évaluation</h4>
+          <p class="text-[11px] text-[#52454B]">Poursuivez la démarche en organisant vos actions ou consultez la synthèse réglementaire.</p>
+        </div>
+        <div class="flex items-center space-x-2 flex-wrap justify-center sm:justify-end shrink-0">
+          <button onclick="switchView('plan')" class="px-4 py-2.5 bg-white hover:bg-white/90 text-[#841028] text-xs font-semibold rounded-xl border border-[#A4133C]/30 transition-all shadow-2xs flex items-center space-x-2">
+            <span>Passer au plan pluriannuel</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+          <button onclick="switchView('report')" class="px-4 py-2.5 bg-[#A4133C] hover:bg-[#841028] text-white text-xs font-semibold rounded-xl transition-all shadow-md flex items-center space-x-2">
+            <span>Voir les résultats & rapport</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+      `;
+      container.appendChild(footerNavCard);
+
+      selectHelpTest(auditState.selectedSubId);
+      updateGlobalMetrics();
+    }
+
+    /* CARTE DU TEST TECHNIQUE ACCESSIBLE AU CLAVIER (RGAA 7.1) */
+    function renderSubRow(critId, sub) {
+      const status = auditState.subStatus[sub.id] || 'UNTESTED';
+      const isGuideActive = (auditState.selectedSubId === sub.id && isHelpPanelOpen);
+
+      return `
+        <div 
+          role="button" 
+          tabindex="0" 
+          aria-label="Test ${sub.id} : ${escapeHtml(sub.title)}. Statut actuel : ${getStatusLabel(status)}"
+          onkeydown="handleCardKeyDown(event, '${sub.id}')"
+          onclick="selectHelpTest('${sub.id}')"
+          data-sub-id="${sub.id}" 
+          data-status="${status}" 
+          class="sub-card bg-white/90 backdrop-blur-md border border-white/90 rounded-xl p-4 shadow-2xs hover:border-[#A4133C] transition-all cursor-pointer space-y-3 focus-visible:outline-none ${auditState.selectedSubId === sub.id ? 'ring-2 ring-[#A4133C] bg-[#FFEAEB]/60' : ''}"
+        >
+          <div class="space-y-1">
+            <div class="flex items-center space-x-2">
+              <span class="text-[10px] font-bold font-mono text-[#841028] bg-[#FFEAEB] px-2 py-0.5 rounded-full border border-[#A4133C]/30 shrink-0">Test ${sub.id}</span>
+              <h4 class="text-xs font-bold text-[#38040E] leading-snug">${escapeHtml(sub.title)}</h4>
+            </div>
+          </div>
+
+          <div class="bg-white/80 p-3 rounded-lg border border-white/90 text-xs font-medium text-[#38040E] leading-relaxed">
+            ${escapeHtml(sub.question)}
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#FFA3A9]/30" onclick="event.stopPropagation()">
+            <button 
+              type="button" 
+              onclick="toggleGuideForSub('${sub.id}', event)" 
+              aria-expanded="${isGuideActive}"
+              class="guide-btn px-2.5 py-1.5 rounded-full text-xs transition-all flex items-center space-x-1 ${
+                isGuideActive 
+                  ? 'font-bold border-2 border-[#A4133C] bg-[#FFEAEB] text-[#841028] hover:bg-[#A4133C]/20 hover:border-[#841028] shadow-2xs' 
+                  : 'font-semibold border border-[#A4133C]/40 bg-[#FFEAEB] text-[#A4133C] hover:bg-[#A4133C] hover:text-white'
+              }" 
+              aria-label="Afficher la méthode et procédure du Test ${sub.id}"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Guide & Procédure</span>
+            </button>
+
+            <div class="flex items-center space-x-1.5 flex-wrap" role="group" aria-label="Statut du Test ${sub.id}">
+              <button 
+                type="button" 
+                onclick="setSubStatus('${critId}', '${sub.id}', 'C')" 
+                aria-pressed="${status === 'C'}"
+                class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${status === 'C' ? 'bg-[#1E5839] text-white border-[#1E5839] shadow-2xs' : 'bg-white text-[#38040E] border-[#A4133C]/40 hover:bg-[#FFEAEB]'}"
+              >
+                Conforme
+              </button>
+              <button 
+                type="button" 
+                onclick="setSubStatus('${critId}', '${sub.id}', 'NC')" 
+                aria-pressed="${status === 'NC'}"
+                class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${status === 'NC' ? 'bg-[#841028] text-white border-[#841028] shadow-2xs' : 'bg-white text-[#38040E] border-[#A4133C]/40 hover:bg-[#FFEAEB]'}"
+              >
+                Non conforme
+              </button>
+              <button 
+                type="button" 
+                onclick="setSubStatus('${critId}', '${sub.id}', 'NA')" 
+                aria-pressed="${status === 'NA'}"
+                class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${status === 'NA' ? 'bg-[#C2410C] text-white border-[#C2410C] shadow-2xs' : 'bg-white text-[#38040E] border-[#A4133C]/40 hover:bg-[#FFEAEB]'}"
+              >
+                Non applicable
+              </button>
+              <button 
+                type="button" 
+                onclick="setSubStatus('${critId}', '${sub.id}', 'UNTESTED')" 
+                aria-pressed="${status === 'UNTESTED'}"
+                class="px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${status === 'UNTESTED' ? 'bg-[#FFEAEB] text-[#A4133C] border-[#A4133C]' : 'bg-white text-[#52454B] border-[#A4133C]/30 hover:bg-[#FFEAEB]'}"
+              >
+                À tester
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getStatusLabel(st) {
+      if (st === 'C') return 'Conforme';
+      if (st === 'NC') return 'Non conforme';
+      if (st === 'NA') return 'Non applicable';
+      return 'À tester';
+    }
+
+    function setSubStatus(critId, subId, val) {
+      auditState.subStatus[subId] = val;
+      selectHelpTest(subId);
+      renderAuditGrid();
+    }
+
+    function saveComment(critId, val) {
+      auditState.comments[critId] = val;
+    }
+
+    function getParentBadgeStyle(stat) {
+      if (stat === 'C') return 'bg-[#1E5839]/15 text-[#1E5839] border border-[#1E5839]/30';
+      if (stat === 'NC') return 'bg-[#841028]/15 text-[#841028] border border-[#841028]/30';
+      if (stat === 'NA') return 'bg-[#C2410C]/15 text-[#C2410C] border border-[#C2410C]/30';
+      return 'bg-[#FFEAEB] text-[#A4133C] border border-[#A4133C]/40';
+    }
+
+    function updateGlobalMetrics() {
+      let totalTests = 0;
+      let evaluatedTests = 0;
+
+      RGAA_DATA.forEach(crit => {
+        crit.subCriteria.forEach(sub => {
+          totalTests++;
+          const status = auditState.subStatus[sub.id] || 'UNTESTED';
+          if (status !== 'UNTESTED') evaluatedTests++;
+        });
+      });
+
+      const progressPercent = totalTests > 0 ? Math.round((evaluatedTests / totalTests) * 100) : 0;
+      document.getElementById('headerProgressText').innerText = `${progressPercent}%`;
+      document.getElementById('headerProgressBar').style.width = `${progressPercent}%`;
+
+      const progressContainer = document.getElementById('headerProgressContainer');
+      if (progressContainer) {
+        progressContainer.setAttribute('aria-valuenow', progressPercent);
+      }
+
+      let countC = 0, countNc = 0, countNa = 0;
+      RGAA_DATA.forEach(crit => {
+        const parentStat = getParentStatus(crit.id);
+        if (parentStat === 'C') countC++;
+        else if (parentStat === 'NC') countNc++;
+        else if (parentStat === 'NA') countNa++;
+      });
+
+      const applicable = countC + countNc;
+      updateDashData(progressPercent, evaluatedTests, totalTests, countNc, countC, applicable);
+    }
+
+    function updateDashData(progressPercent = 0, evaluated = 0, total = 18, countNc = 0, countC = 0, applicable = 0) {
+      const projName = document.getElementById('projectName').value || "Projet Web";
+      document.getElementById('projectName').value = projName;
+      document.getElementById('headerProjectName').innerText = projName;
+      document.getElementById('dashProjectName').innerText = projName;
+      document.getElementById('dashAuditorName').innerText = `Auditeur : ${document.getElementById('auditorName').value || 'Hana Boudaouine'}`;
+      document.getElementById('dashProgressVal').innerText = `${evaluated} / ${total} tests (${progressPercent}%)`;
+      document.getElementById('dashNcVal').innerText = `${countNc} problème${countNc > 1 ? 's' : ''}`;
+
+      const scoreVal = document.getElementById('dashScoreVal');
+      if (evaluated === 0) {
+        scoreVal.innerText = "Non évalué";
+      } else {
+        const score = applicable > 0 ? Math.round((countC / applicable) * 100) : 100;
+        scoreVal.innerText = `${score}% de conformité`;
+      }
+    }
+
+    /* RENDU DU PLAN PLURIANNUEL AVEC LABELS ARIA INDIVIDUELS (RGAA 11.1) */
+    function renderPlanView() {
+      const axesContainer = document.getElementById('planAxesContainer');
+      const tableBody = document.getElementById('planTableBody');
+      axesContainer.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      let ncSubList = [];
+
+      RGAA_DATA.forEach(crit => {
+        crit.subCriteria.forEach(sub => {
+          if ((auditState.subStatus[sub.id] || 'UNTESTED') === 'NC') {
+            ncSubList.push({
+              critId: crit.id,
+              theme: crit.theme,
+              critTitle: crit.title,
+              subId: sub.id,
+              subTitle: sub.title,
+              comment: auditState.comments[crit.id] || "Défaut constaté lors de l'évaluation.",
+              fixSuggestion: sub.fixSuggestion || "Proposer une mise en conformité selon les spécifications du RGAA."
+            });
+          }
+        });
+      });
+
+      if (ncSubList.length === 0) {
+        axesContainer.innerHTML = `
+          <div class="p-4 bg-white/80 border border-white/90 rounded-xl text-xs text-[#1E5839] font-medium leading-relaxed">
+            Aucune non-conformité relevée pour l'instant sur les critères évalués. Les actions correctives viendront s'alimenter au fur et à mesure de votre saisie dans la Grille d'évaluation.
+          </div>
+        `;
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="p-4 text-center text-xs text-[#52454B]">Aucune action requise sur le périmètre contrôlé à ce jour.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      const groupedByTheme = {};
+      ncSubList.forEach(item => {
+        if (!groupedByTheme[item.theme]) groupedByTheme[item.theme] = [];
+        groupedByTheme[item.theme].push(item);
+      });
+
+      Object.keys(groupedByTheme).forEach(theme => {
+        const items = groupedByTheme[theme];
+        const axisCard = document.createElement('div');
+        axisCard.className = "p-4 bg-white/60 backdrop-blur-md border border-white/90 rounded-xl space-y-3 shadow-2xs";
+
+        let itemsHtml = items.map(it => `
+          <div class="bg-white/90 p-3 rounded-lg border border-white/90 text-xs space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-[#841028]">Test ${it.subId} — ${escapeHtml(it.subTitle)}</span>
+              <span class="text-[10px] bg-[#841028] text-white font-bold px-2 py-0.5 rounded-full">Non Conforme</span>
+            </div>
+            <p class="text-[#38040E]"><strong>Constat d'audit :</strong> ${escapeHtml(it.comment)}</p>
+            <p class="text-[#1E5839] font-semibold"><strong>Piste de correction recommandée :</strong> ${escapeHtml(it.fixSuggestion)}</p>
+          </div>
+        `).join('');
+
+        axisCard.innerHTML = `
+          <div class="flex items-center space-x-2 border-b border-[#FFA3A9]/40 pb-2">
+            <span class="text-xs font-bold text-[#A4133C] uppercase tracking-wider">Axe de travail : ${escapeHtml(theme)}</span>
+            <span class="text-[10px] bg-white text-[#38040E] font-bold px-2 py-0.5 rounded-full border border-[#A4133C]/30">${items.length} action(s)</span>
+          </div>
+          <div class="space-y-2">
+            ${itemsHtml}
+          </div>
+        `;
+        axesContainer.appendChild(axisCard);
+      });
+
+      ncSubList.forEach((item) => {
+        if (!auditState.planData[item.subId]) {
+          auditState.planData[item.subId] = {
+            priority: 'Haute',
+            phase: '2026 — Trimestre 1',
+            owner: 'Pôle Dev / UX',
+            status: 'À planifier'
+          };
+        }
+
+        const data = auditState.planData[item.subId];
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/50 transition-colors";
+        tr.innerHTML = `
+          <td class="p-3 font-mono font-bold text-[#841028] align-top">Test ${item.subId}</td>
+          <td class="p-3 align-top space-y-1">
+            <div class="font-bold text-[#38040E]">${escapeHtml(item.subTitle)}</div>
+            <div class="text-[11px] text-[#1E5839] leading-relaxed font-medium">${escapeHtml(item.fixSuggestion)}</div>
+          </td>
+          <td class="p-3 align-top">
+            <select 
+              aria-label="Priorité d'action pour le test ${item.subId}"
+              onchange="updatePlanItem('${item.subId}', 'priority', this.value)" 
+              class="w-full bg-white border border-[#A4133C]/40 rounded-lg px-2 py-1 text-xs text-[#38040E] outline-none font-medium"
+            >
+              <option value="Haute" ${data.priority === 'Haute' ? 'selected' : ''}>Haute</option>
+              <option value="Moyenne" ${data.priority === 'Moyenne' ? 'selected' : ''}>Moyenne</option>
+              <option value="Basse" ${data.priority === 'Basse' ? 'selected' : ''}>Basse</option>
+            </select>
+          </td>
+          <td class="p-3 align-top">
+            <input 
+              type="text" 
+              aria-label="Échéance prévisionnelle pour le test ${item.subId}"
+              value="${escapeHtml(data.phase)}" 
+              onchange="updatePlanItem('${item.subId}', 'phase', this.value)" 
+              class="w-full bg-white border border-[#A4133C]/40 rounded-lg px-2 py-1 text-xs text-[#38040E] outline-none font-medium"
+            >
+          </td>
+          <td class="p-3 align-top">
+            <input 
+              type="text" 
+              aria-label="Pôle responsable pour le test ${item.subId}"
+              value="${escapeHtml(data.owner)}" 
+              onchange="updatePlanItem('${item.subId}', 'owner', this.value)" 
+              class="w-full bg-white border border-[#A4133C]/40 rounded-lg px-2 py-1 text-xs text-[#38040E] outline-none font-medium"
+            >
+          </td>
+          <td class="p-3 align-top">
+            <select 
+              aria-label="Statut d'avancement pour le test ${item.subId}"
+              onchange="updatePlanItem('${item.subId}', 'status', this.value)" 
+              class="w-full bg-white border border-[#A4133C]/40 rounded-lg px-2 py-1 text-xs text-[#38040E] font-bold outline-none"
+            >
+              <option value="À planifier" ${data.status === 'À planifier' ? 'selected' : ''}>À planifier</option>
+              <option value="En cours" ${data.status === 'En cours' ? 'selected' : ''}>En cours</option>
+              <option value="Corrigé" ${data.status === 'Corrigé' ? 'selected' : ''}>Corrigé</option>
+            </select>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function updatePlanItem(subId, field, val) {
+      if (!auditState.planData[subId]) auditState.planData[subId] = {};
+      auditState.planData[subId][field] = val;
+    }
+
+    function renderReportView() {
+      let countC = 0, countNc = 0, countNa = 0, evaluatedCount = 0;
+      const ncList = document.getElementById('reportNcList');
+      ncList.innerHTML = '';
+
+      RGAA_DATA.forEach(crit => {
+        crit.subCriteria.forEach(sub => {
+          if ((auditState.subStatus[sub.id] || 'UNTESTED') !== 'UNTESTED') evaluatedCount++;
+        });
+
+        const stat = getParentStatus(crit.id);
+        if (stat === 'C') countC++;
+        else if (stat === 'NC') countNc++;
+        else if (stat === 'NA') countNa++;
+
+        if (stat === 'NC') {
+          const comment = auditState.comments[crit.id] || "Aucune observation rédigée.";
+          const failedSubs = crit.subCriteria.filter(s => (auditState.subStatus[s.id] || 'UNTESTED') === 'NC');
+
+          ncList.innerHTML += `
+            <div class="p-4 bg-white/80 border border-white/90 rounded-2xl space-y-1.5 text-xs shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-[#841028]">Critère RGAA ${crit.id} — ${escapeHtml(crit.title)}</span>
+                <span class="text-[10px] bg-[#841028] text-white font-bold px-2.5 py-0.5 rounded-full">Non Conforme</span>
+              </div>
+              <p class="text-[#38040E]"><strong>Observation :</strong> ${escapeHtml(comment)}</p>
+              <p class="text-[#52454B]"><strong>Tests en échec (${failedSubs.length}) :</strong> ${failedSubs.map(s => `Test ${s.id}`).join(', ')}</p>
+            </div>
+          `;
+        }
+      });
+
+      const applicable = countC + countNc;
+      const scoreBadge = document.getElementById('reportStatusBadge');
+      const scoreDisplay = document.getElementById('reportScoreDisplay');
+      const legalText = document.getElementById('reportLegalText');
+
+      if (evaluatedCount === 0) {
+        scoreDisplay.innerText = "--";
+        scoreBadge.innerText = "Non démarré";
+        scoreBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-white text-[#38040E] border border-[#A4133C]/40 shadow-2xs";
+        legalText.innerText = "Saisissez les premières évaluations dans la grille pour calculer la conformité.";
+      } else {
+        const score = applicable > 0 ? Math.round((countC / applicable) * 100) : 100;
+        scoreDisplay.innerText = `${score}%`;
+
+        if (score === 100) {
+          scoreBadge.innerText = "Totalement Conforme";
+          scoreBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-[#1E5839]/15 text-[#1E5839] border border-[#1E5839]/30 shadow-2xs";
+          legalText.innerText = "Le service web respecte 100% des critères évalués du RGAA.";
+        } else if (score >= 50) {
+          scoreBadge.innerText = "Partiellement Conforme";
+          scoreBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-white text-[#841028] border border-[#A4133C]/40 shadow-2xs";
+          legalText.innerText = `Le taux de conformité atteint ${score}%. La déclaration d'accessibilité doit être publiée avec le schéma pluriannuel.`;
+        } else {
+          scoreBadge.innerText = "Non Conforme";
+          scoreBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-[#841028]/15 text-[#841028] border border-[#841028]/30 shadow-2xs";
+          legalText.innerText = `Le taux (${score}%) est en dessous du seuil réglementaire de 50%. Des actions correctives prioritaires sont requises.`;
+        }
+      }
+
+      if (countNc === 0 && evaluatedCount > 0) {
+        ncList.innerHTML = `<p class="text-xs text-[#1E5839] font-bold">Aucune non-conformité relevée sur le périmètre audité.</p>`;
+      }
+    }
+
+    /* GENERATION DU DOCUMENT PDF DE QUALITÉ PROFESSIONNELLE (ACCESSIBLE) */
+    function renderPDFDocumentHTML() {
+      const projName = document.getElementById('projectName').value || "Projet Web";
+      const auditor = document.getElementById('auditorName').value || "Hana Boudaouine";
+      const sample = document.getElementById('samplePages').value || "Non renseigné";
+
+      let countC = 0, countNc = 0, countNa = 0, evaluatedCount = 0;
+      let ncItems = [];
+
+      RGAA_DATA.forEach(crit => {
+        crit.subCriteria.forEach(sub => {
+          const st = auditState.subStatus[sub.id] || 'UNTESTED';
+          if (st !== 'UNTESTED') evaluatedCount++;
+          if (st === 'NC') {
+            ncItems.push({
+              subId: sub.id,
+              critId: crit.id,
+              theme: crit.theme,
+              title: sub.title,
+              comment: auditState.comments[crit.id] || "Défaut constaté lors de l'évaluation sur l'échantillon.",
+              fix: sub.fixSuggestion || "Proposer une mise en conformité selon les recommandations du RGAA."
+            });
+          }
+        });
+
+        const stat = getParentStatus(crit.id);
+        if (stat === 'C') countC++;
+        else if (stat === 'NC') countNc++;
+        else if (stat === 'NA') countNa++;
+      });
+
+      const applicable = countC + countNc;
+      const score = applicable > 0 ? Math.round((countC / applicable) * 100) : 0;
+      let statusText = "Non évalué";
+      if (evaluatedCount > 0) {
+        if (score === 100) statusText = "Totalement Conforme (100%)";
+        else if (score >= 50) statusText = "Partiellement Conforme (≥ 50%)";
+        else statusText = "Non Conforme (< 50%)";
+      }
+
+      const currentDate = new Date().toLocaleDateString('fr-FR', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      return `
+        <div style="font-family: Arial, Helvetica, sans-serif; color: #111111; padding: 25px; background: #ffffff; width: 100%; box-sizing: border-box; line-height: 1.5;">
+          
+          <!-- EN-TÊTE DU RAPPORT -->
+          <div style="border-bottom: 3px solid #A4133C; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="display: inline-block; background: #A4133C; color: #ffffff; font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; margin-bottom: 6px;">Rapport d'Audit Officiel</div>
+              <h1 style="font-size: 22px; margin: 0; color: #38040E; font-weight: 800; letter-spacing: -0.5px;">Audit d'Accessibilité Numérique RGAA 4.1.2</h1>
+              <p style="font-size: 12px; color: #444444; margin: 4px 0 0 0;">Référentiel Général d'Amélioration de l'Accessibilité</p>
+            </div>
+            <div style="text-align: right; font-size: 11px; color: #222222; background: #fdf2f4; padding: 10px 14px; border-radius: 8px; border: 1px solid #fca5a5;">
+              <div style="margin-bottom: 3px;"><strong>Service :</strong> ${escapeHtml(projName)}</div>
+              <div style="margin-bottom: 3px;"><strong>Auditeur :</strong> ${escapeHtml(auditor)}</div>
+              <div><strong>Date :</strong> ${currentDate}</div>
+            </div>
+          </div>
+
+          <!-- SYNTHÈSE GLOBALE -->
+          <div style="background: #fdf2f4; border: 1px solid #fca5a5; padding: 18px; border-radius: 10px; margin-bottom: 25px; page-break-inside: avoid;">
+            <h2 style="font-size: 15px; margin: 0 0 12px 0; color: #841028; font-weight: bold; border-bottom: 1px dashed #fca5a5; padding-bottom: 6px;">Synthèse Globale de Conformité</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <span style="font-size: 11px; text-transform: uppercase; color: #555; display: block; font-weight: bold;">Taux de conformité mesuré</span>
+                <span style="font-size: 28px; font-weight: 900; color: #A4133C;">${score}%</span>
+              </div>
+              <div>
+                <span style="font-size: 11px; text-transform: uppercase; color: #555; display: block; font-weight: bold;">Statut réglementaire</span>
+                <span style="font-size: 14px; font-weight: bold; color: #38040E;">${statusText}</span>
+              </div>
+              <div>
+                <span style="font-size: 11px; text-transform: uppercase; color: #555; display: block; font-weight: bold;">Avancement des contrôles</span>
+                <span style="font-size: 14px; font-weight: bold; color: #38040E;">${evaluatedCount} / 18 tests</span>
+              </div>
+            </div>
+            <div style="margin-top: 12px; font-size: 11px; color: #333; border-t: 1px solid #fca5a5; pt: 8px;">
+              Répartition : <strong>${countC}</strong> critère(s) conforme(s) | <strong>${countNc}</strong> non conforme(s) | <strong>${countNa}</strong> non applicable(s).
+            </div>
+          </div>
+
+          <!-- ÉCHANTILLON AUDITÉ -->
+          <div style="margin-bottom: 25px; page-break-inside: avoid;">
+            <h3 style="font-size: 14px; color: #38040E; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 10px;">Périmètre et Échantillon Audité</h3>
+            <div style="font-size: 11px; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; border-radius: 8px; font-family: monospace; color: #111111; white-space: pre-wrap; line-height: 1.5;">${escapeHtml(sample)}</div>
+          </div>
+
+          <!-- DETAIL DES NON-CONFORMITÉS -->
+          <div style="margin-bottom: 25px;">
+            <h3 style="font-size: 14px; color: #841028; font-weight: bold; border-bottom: 2px solid #fca5a5; padding-bottom: 6px; margin-bottom: 14px;">
+              Détail des Non-Conformités Relevées (${ncItems.length})
+            </h3>
+            ${ncItems.length === 0 ? `
+              <div style="font-size: 12px; color: #1E5839; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 12px; border-radius: 8px; font-weight: bold;">
+                Aucune non-conformité n'a été détectée sur les critères et tests contrôlés.
+              </div>
+            ` : ncItems.map(it => `
+              <div style="border: 1px solid #e5e7eb; border-left: 5px solid #841028; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #ffffff; page-break-inside: avoid;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 12px; font-weight: bold; color: #841028;">Test ${it.subId} (${it.theme}) —${escapeHtml(it.title)}</span>
+                  <span style="font-size: 9px; font-weight: bold; background: #841028; color: #ffffff; padding: 2px 6px; border-radius: 4px;">NON CONFORME</span>
+                </div>
+                <div style="font-size: 11px; color: #111111; margin-bottom: 6px;">
+                  <strong>Observation & Constat :</strong> ${escapeHtml(it.comment)}
+                </div>
+                <div style="font-size: 11px; color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px; border-radius: 4px; font-weight: 500;">
+                  <strong>Piste de correction recommandée :</strong> ${escapeHtml(it.fix)}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- RAPPEL SUR LE SCHEMA PLURIANNUEL -->
+          <div style="margin-bottom: 25px; page-break-inside: avoid;">
+            <h3 style="font-size: 14px; color: #38040E; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 12px;">
+              Directives Légales pour le Schéma Pluriannuel (Loi 2005-102 & Décret 2019-768)
+            </h3>
+            <div style="font-size: 10px; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px; color: #222222; line-height: 1.5;">
+              <strong>Mentions légales obligatoires à publier :</strong><br>
+              • Durée fixée à 3 ans maximum.<br>
+              • Désignation du Référent Accessibilité et gouvernance de projet.<br>
+              • Budget annuel et ressources humaines affectées (ETP).<br>
+              • Plan de formation des personnels UX/UI, dev et contributeurs.<br>
+              • Clause RGAA dans 100% des marchés publics d'achats numériques.<br>
+              • Procédure de suivi des réclamations usagers et droit à la compensation.
+            </div>
+          </div>
+
+          <!-- PLAN D'ACTION ANNUEL -->
+          <div style="margin-bottom: 25px;">
+            <h3 style="font-size: 14px; color: #38040E; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 14px;">
+              Plan d'Action Annuel (Matrice des correctifs techniques)
+            </h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; margin-bottom: 10px;">
+              <caption style="display: none;">Matrice d'action du plan pluriannuel</caption>
+              <thead>
+                <tr style="background: #38040E; color: #ffffff; font-weight: bold;">
+                  <th scope="col" style="padding: 8px; border: 1px solid #38040E;">Réf. Test</th>
+                  <th scope="col" style="padding: 8px; border: 1px solid #38040E;">Intitulé du composant</th>
+                  <th scope="col" style="padding: 8px; border: 1px solid #38040E;">Priorité</th>
+                  <th scope="col" style="padding: 8px; border: 1px solid #38040E;">Échéance / Phase</th>
+                  <th scope="col" style="padding: 8px; border: 1px solid #38040E;">Pôle Responsable</th>
+                  <th scope="col" style="padding: 8px; border: 1px solid #38040E;">Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ncItems.length === 0 ? `
+                  <tr><td colspan="6" style="padding: 10px; text-align: center; color: #555555; border: 1px solid #e5e7eb;">Aucune action à planifier pour le moment.</td></tr>
+                ` : ncItems.map(it => {
+                  const data = auditState.planData[it.subId] || { priority: 'Haute', phase: '2026 — Trimestre 1', owner: 'Pôle Dev / UX', status: 'À planifier' };
+                  return `
+                    <tr style="border-bottom: 1px solid #e5e7eb; background: #ffffff; page-break-inside: avoid;">
+                      <td style="padding: 8px; font-weight: bold; color: #841028; border: 1px solid #e5e7eb;">Test ${it.subId}</td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: bold;">${escapeHtml(it.title)}</td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb;">${escapeHtml(data.priority)}</td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb;">${escapeHtml(data.phase)}</td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb;">${escapeHtml(data.owner)}</td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: bold; color: #38040E;">${escapeHtml(data.status)}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- AVERTISSEMENT LÉGAL SUR LE PÉRIMÈTRE -->
+          <div style="font-size: 10px; color: #555555; background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb; line-height: 1.4; page-break-inside: avoid;">
+            <strong>Avertissement et Portée Réglementaire :</strong> L'évaluation est réalisée sur un échantillon ciblé de 18 tests fondamentaux du RGAA 4.1.2 (Images, Couleurs, Liens). Elle permet de piloter la première phase d'amélioration continue. Ce rapport ne remplace pas un audit de conformité globale couvrant l'intégralité des 106 critères du référentiel légal.
+          </div>
+
+        </div>
+      `;
+    }
+
+    /* TELECHARGEMENT PDF VIA HTML2PDF.JS (AVEC ANNONCE DYNAMIQUE ARIA LIVE) */
+    function downloadFullAuditPDF() {
+      const statusBox = document.getElementById('pdfExportStatus');
+      if (statusBox) {
+        statusBox.className = "p-3 rounded-xl border text-xs bg-white text-[#38040E] border-[#A4133C] font-semibold shadow-2xs";
+        statusBox.innerText = "Génération du document PDF officiel en cours. Veuillez patienter...";
+        statusBox.classList.remove('hidden');
+      }
+
+      const renderContainer = document.getElementById('pdfRenderArea');
+      renderContainer.innerHTML = renderPDFDocumentHTML();
+      renderContainer.classList.remove('hidden');
+
+      const projNameClean = (document.getElementById('projectName').value || "Projet_Web").replace(/[^a-zA-Z0-9_-]/g, "_");
+      
+      const opt = {
+        margin:       [10, 10, 10, 10],
+        filename:     `Audit_RGAA_${projNameClean}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      if (typeof html2pdf !== 'undefined') {
+        html2pdf().set(opt).from(renderContainer).save().then(() => {
+          renderContainer.classList.add('hidden');
+          if (statusBox) {
+            statusBox.className = "p-3 rounded-xl border text-xs bg-[#1E5839]/10 text-[#1E5839] border-[#1E5839]/30 font-bold";
+            statusBox.innerText = "Le rapport PDF a été généré et téléchargé avec succès.";
+          }
+        }).catch((err) => {
+          renderContainer.classList.add('hidden');
+          if (statusBox) {
+            statusBox.className = "p-3 rounded-xl border text-xs bg-[#841028]/10 text-[#841028] border-[#841028]/30 font-bold";
+            statusBox.innerText = "Une erreur est survenue lors de la création du PDF. Utilisez la fonction d'impression de votre navigateur.";
+          }
+        });
+      } else {
+        window.print();
+        renderContainer.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      RGAA_DATA.forEach(crit => {
+        crit.subCriteria.forEach(sub => {
+          auditState.subStatus[sub.id] = 'UNTESTED';
+        });
+      });
+      renderAuditGrid();
+    });
+  </script>
+</body>
+</html>
